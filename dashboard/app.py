@@ -1,6 +1,10 @@
+import os
 import sys
-sys.path.insert(0, 'D:\\DATA ANALYST BOOTCAMP\\Loan Dashboard')
 
+# This automatically finds the root folder ("Loan Dashboard") 
+# and adds it to Python's search path so it can find the 'analysis' folder.
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, root_path)
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -14,7 +18,7 @@ st.set_page_config(page_title="Loan Analytics Dashboard",
 @st.cache_data
 def load_data():
     # Use the full path to ensure it finds the file
-    path = r'D:\DATA ANALYST BOOTCAMP\Loan Dashboard\data\loans.csv'
+    path = 'data\loans.csv'
     return pd.read_csv(path)
 
 df = load_data()
