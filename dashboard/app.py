@@ -1,57 +1,80 @@
 import os
 import sys
-
-# This automatically finds the root folder ("Loan Dashboard") 
-# and adds it to Python's search path so it can find the 'analysis' folder.
-root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, root_path)
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+
+# ---- 1. DYNAMIC PATHING (THE FIX) ----
+# This calculates the project root (Loan Dashboard/) regardless of where it's hosted.
+root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+# Now we can safely import from the analysis folder
 from analysis.kpi import get_kpis
 from analysis.trends import (monthly_disbursement, branch_performance,
-                              loan_status_distribution, loan_type_breakdown)
+                               loan_status_distribution, loan_type_breakdown)
 
+# ---- 2. CONFIGURATION ----
 st.set_page_config(page_title="Loan Analytics Dashboard",
                    page_icon="💰", layout="wide")
 
 @st.cache_data
 def load_data():
-    # Use the full path to ensure it finds the file
-    path = 'data\loans.csv'
-    return pd.read_csv(path)
+    # os.path.join handles the backslash (\) vs forward slash (/) difference 
+    # between Windows and Linux automatically.
+    csv_path = os.path.join(root_path, 'data', 'loans.csv')
+    
+    if not os.path.exists(csv_path):
+        st.error(f"❌ Data file not found at: {csv_path}")
+        st.stop()
+        
+    return pd.read_csv(csv_path)
 
 df = load_data()
 
-# ---- Sidebar ----
-st.sidebar.title("🔍 Filter Panel")
-branch_filter = st.sidebar.multiselect("Branch",
-    df['branch'].unique(), default=list(df['branch'].unique()))
-type_filter = st.sidebar.multiselect("Loan Type",
-    df['loan_type'].unique(), default=list(df['loan_type'].unique()))
-status_filter = st.sidebar.multiselect("Loan Status",
-    df['status'].unique(), default=list(df['status'].unique()))
+# ---- 3. SIDEBAR FILTERS ----
+st.sidebar.header("🔍 Filter Panel")
+branch_filter = st.sidebar.multiselect("Select Branch",
+    options=df['branch'].unique(), 
+    default=list(df['branch'].unique()))
 
+type_filter = st.sidebar.multiselect("Select Loan Type",
+    options=df['loan_type'].unique(), 
+    default=list(df['loan_type'].unique()))
+
+status_filter = st.sidebar.multiselect("Select Loan Status",
+    options=df['status'].unique(), 
+    default=list(df['status'].unique()))
+
+# Apply Filters
 filtered_df = df[
     df['branch'].isin(branch_filter) &
     df['loan_type'].isin(type_filter) &
     df['status'].isin(status_filter)
 ]
 
-# ---- Header ----
+# Guardrail: If filters return no data
+if filtered_df.empty:
+    st.warning("⚠️ No data available for the selected filters. Please adjust your selection.")
+    st.stop()
+
+# ---- 4. HEADER ----
 st.title("💰 Loan Portfolio Analytics Dashboard")
 st.caption("Gold Loan NBFC — Operational Intelligence Platform")
 st.markdown("---")
 
-# ---- KPI Cards ----
+# ---- 5. KPI CARDS ----
 kpis = get_kpis(filtered_df)
-cols = st.columns(6)
+cols = st.columns(len(kpis))
 for col, (key, val) in zip(cols, kpis.items()):
     col.metric(label=key, value=val)
 
 st.markdown("---")
 
-# ---- Row 1 ----
+# ---- 6. VISUALIZATIONS ----
+
+# Row 1
 c1, c2 = st.columns(2)
 with c1:
     st.subheader("📈 Monthly Disbursement Trend")
@@ -70,7 +93,7 @@ with c2:
                   hole=0.35)
     st.plotly_chart(fig2, use_container_width=True)
 
-# ---- Row 2 ----
+# Row 2
 c3, c4 = st.columns(2)
 with c3:
     st.subheader("🏢 Branch-wise Loan Volume")
@@ -89,7 +112,7 @@ with c4:
                   labels={'loan_amount': 'Amount (₹)', 'loan_type': 'Type'})
     st.plotly_chart(fig4, use_container_width=True)
 
-# ---- Row 3 ----
+# Row 3
 c5, c6 = st.columns(2)
 with c5:
     st.subheader("📊 Credit Score Distribution")
@@ -106,9 +129,9 @@ with c6:
                   color_discrete_sequence=px.colors.qualitative.Bold)
     st.plotly_chart(fig6, use_container_width=True)
 
-# ---- Raw Data ----
+# ---- 7. RAW DATA TABLE ----
 st.markdown("---")
-with st.expander("📋 View Raw Loan Data"):
+with st.expander("📋 View Filtered Raw Loan Data"):
     st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True)
 
-st.caption("Built by Preeti Ranjan Pradhan | Loan Portfolio Analytics | 2025")
+st.caption(f"Built by Preeti Ranjan Pradhan | B.Tech CSE | 2026")
