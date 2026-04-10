@@ -9,6 +9,8 @@ An operational intelligence platform built for a Gold Loan NBFC (Non-Banking Fin
 ## 🚀 Project Overview
 This project demonstrates a full-stack data workflow—from generating synthetic banking data to hosting a live interactive dashboard and building a professional BI report. It helps stakeholders identify high-risk branches and track monthly disbursement trends.
 
+live deploy :- https://loan-dashboardgit-4sdcdtg3jcshbw6hprjeyf.streamlit.app/
+
 ## 📸 Dashboard Preview (Power BI)
 ![Loan Portfolio Dashboard](https://github.com/PreetiRanjanP/loan-dashboard/raw/main/Screenshot%202026-04-06%20121624.png)
 *Professional Power BI dashboard featuring KPI cards, trend analysis, and multi-dimensional slicers.*
