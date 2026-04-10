@@ -4,13 +4,13 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# ---- 1. DYNAMIC PATHING (THE FIX) ----
-# This calculates the project root (Loan Dashboard/) regardless of where it's hosted.
+# ---- 1. DYNAMIC PATHING ----
+# Calculates project root regardless of environment (Windows vs Linux Cloud)
 root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if root_path not in sys.path:
     sys.path.insert(0, root_path)
 
-# Now we can safely import from the analysis folder
+# Safe imports from the analysis folder
 from analysis.kpi import get_kpis
 from analysis.trends import (monthly_disbursement, branch_performance,
                                loan_status_distribution, loan_type_breakdown)
@@ -21,8 +21,7 @@ st.set_page_config(page_title="Loan Analytics Dashboard",
 
 @st.cache_data
 def load_data():
-    # os.path.join handles the backslash (\) vs forward slash (/) difference 
-    # between Windows and Linux automatically.
+    # os.path.join handles cross-platform slash differences automatically
     csv_path = os.path.join(root_path, 'data', 'loans.csv')
     
     if not os.path.exists(csv_path):
@@ -72,7 +71,7 @@ for col, (key, val) in zip(cols, kpis.items()):
 
 st.markdown("---")
 
-# ---- 6. VISUALIZATIONS ----
+# ---- 6. VISUALIZATIONS (Updated with width='stretch') ----
 
 # Row 1
 c1, c2 = st.columns(2)
@@ -83,7 +82,8 @@ with c1:
                   labels={'loan_amount': 'Amount (₹)', 'month': 'Month'},
                   color_discrete_sequence=['#1f77b4'])
     fig.update_layout(xaxis_tickangle=-45)
-    st.plotly_chart(fig, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig, width='stretch')
 
 with c2:
     st.subheader("🟢 Loan Status Distribution")
@@ -91,7 +91,8 @@ with c2:
     fig2 = px.pie(status_dist, names='status', values='count',
                   color_discrete_sequence=px.colors.qualitative.Set2,
                   hole=0.35)
-    st.plotly_chart(fig2, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig2, width='stretch')
 
 # Row 2
 c3, c4 = st.columns(2)
@@ -102,7 +103,8 @@ with c3:
                   text_auto='.2s',
                   labels={'total_amount': 'Total Amount (₹)'},
                   color_discrete_sequence=px.colors.qualitative.Pastel)
-    st.plotly_chart(fig3, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig3, width='stretch')
 
 with c4:
     st.subheader("🏅 Loan Type Breakdown")
@@ -110,7 +112,8 @@ with c4:
     fig4 = px.bar(lt, x='loan_type', y='loan_amount', color='loan_type',
                   text_auto='.2s',
                   labels={'loan_amount': 'Amount (₹)', 'loan_type': 'Type'})
-    st.plotly_chart(fig4, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig4, width='stretch')
 
 # Row 3
 c5, c6 = st.columns(2)
@@ -118,7 +121,8 @@ with c5:
     st.subheader("📊 Credit Score Distribution")
     fig5 = px.histogram(filtered_df, x='credit_score', nbins=30,
                         color_discrete_sequence=['#636EFA'])
-    st.plotly_chart(fig5, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig5, width='stretch')
 
 with c6:
     st.subheader("🏦 NPA by Branch")
@@ -127,11 +131,13 @@ with c6:
                   text_auto=True,
                   labels={'npa_count': 'NPA Count'},
                   color_discrete_sequence=px.colors.qualitative.Bold)
-    st.plotly_chart(fig6, use_container_width=True)
+    # Modernized width parameter
+    st.plotly_chart(fig6, width='stretch')
 
-# ---- 7. RAW DATA TABLE ----
+# ---- 7. RAW DATA TABLE (Updated with width='stretch') ----
 st.markdown("---")
 with st.expander("📋 View Filtered Raw Loan Data"):
-    st.dataframe(filtered_df.reset_index(drop=True), use_container_width=True)
+    # Modernized width parameter
+    st.dataframe(filtered_df.reset_index(drop=True), width='stretch')
 
 st.caption(f"Built by Preeti Ranjan Pradhan | B.Tech CSE | 2026")
